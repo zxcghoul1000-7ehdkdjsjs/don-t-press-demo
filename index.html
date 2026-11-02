@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Don’t Press</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Manrope:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#050507;--card:#0f0f14;--ink:#f4f4f6;--line:#2a2a33;--red:#ff2d46;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{margin:0;background:radial-gradient(ellipse at 50% -10%,#2a0a10 0,var(--bg) 55%) no-repeat,var(--bg);min-height:100vh;color:var(--ink);font:500 1rem/1.5 Manrope,system-ui,sans-serif}
+main{max-width:520px;margin:0 auto;padding:20px 16px 40px}
+[hidden]{display:none!important}
+section{animation:in .35s ease-out}
+h1{font:800 2.2rem/1.1 Unbounded,system-ui,sans-serif;margin:10px 0 8px;text-align:center;animation:flick 5s infinite}
+h2{font:600 1.1rem Unbounded,system-ui,sans-serif;margin:0}
+.sub{margin:0 0 28px;text-align:center;opacity:.65}
+.logo{width:150px;margin:36px auto 6px;filter:drop-shadow(0 0 28px rgba(255,45,70,.6));animation:pulse 2.2s ease-in-out infinite}
+button{font:700 1rem Manrope,system-ui,sans-serif;color:var(--ink);cursor:pointer;transition:transform .12s,background .25s,border-color .25s}
+button:active{transform:scale(.95)}
+button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.big{display:block;width:100%;padding:20px;border:0;border-radius:18px;background:var(--red);color:#fff;font:800 1.3rem Unbounded,system-ui,sans-serif;box-shadow:0 6px 0 #8c1426;animation:ring 1.8s ease-out infinite}
+.alt{display:block;width:100%;margin-top:14px;padding:16px;border:2px solid var(--line);border-radius:18px;background:var(--card)}
+.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{padding:10px 14px;border:2px solid var(--line);border-radius:12px;background:var(--card)}
+.stack{display:grid;gap:10px;margin-bottom:18px}
+.stack button{padding:18px;border:2px solid var(--line);border-radius:16px;background:var(--card);text-align:left;font-size:1.05rem}
+.stack button[aria-pressed="true"]{border-color:var(--red);background:#1b0a0f}
+.game{position:relative;overflow:hidden;background:var(--card);border:2px solid var(--line);border-radius:24px;padding:20px}
+.status{min-height:1.6em;margin:0 0 12px;font-weight:700}
+.brule{font:700 1.05rem/1.5 Manrope,system-ui,sans-serif;margin:0 0 6px}
+.again{margin-top:14px;display:block;width:100%;padding:16px;border:0;border-radius:14px;background:var(--red);color:#fff}
+.dark{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:5}
+.game.shake{animation:shake .4s}
+.bstage{display:flex;flex-direction:column;align-items:center}
+.bar{width:100%;height:8px;background:var(--line);border-radius:8px;overflow:hidden;margin-top:16px}.bar i{display:block;height:100%;width:100%;background:var(--red)}
+.trap{border:0;background:var(--zc,#8a8a96);color:#111;width:min(260px,76%);aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 10px 0 rgba(0,0,0,.55);padding:0}
+.trap svg{width:58%;height:58%}
+.trap b{position:absolute;right:6px;top:6px;width:44px;height:44px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font:800 1.4rem Unbounded,system-ui,sans-serif}
+.trap.s{border-radius:32px;width:min(310px,94%);aspect-ratio:4/3;flex-direction:column;gap:6px;padding:16px}
+.trap.s svg{width:34%;height:34%}
+.trap.s .bt{font:800 1.05rem/1.25 Manrope,system-ui,sans-serif;font-style:normal;text-align:center}
+.trap.s b{top:8px;right:8px;width:38px;height:38px;font-size:1.1rem}
+.trap.hit{animation:press .16s}
+.trap.bad{outline:6px solid var(--red);outline-offset:4px}
+@keyframes in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes ring{0%{box-shadow:0 6px 0 #8c1426,0 0 0 0 rgba(255,45,70,.5)}100%{box-shadow:0 6px 0 #8c1426,0 0 0 20px rgba(255,45,70,0)}}
+@keyframes flick{0%,92%,100%{opacity:1}93%{opacity:.35}94%{opacity:1}96%{opacity:.5}97%{opacity:1}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+@keyframes press{50%{transform:translateY(8px) scale(.96)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.rl{margin:0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:n}
+.rl li{counter-increment:n;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 14px 14px 54px;position:relative}
+.rl li::before{content:counter(n);position:absolute;left:14px;top:13px;width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;font:800 .9rem Unbounded,system-ui,sans-serif;display:flex;align-items:center;justify-content:center}
+.inp{display:block;width:100%;margin:0 0 14px;padding:16px;border:2px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);font:700 1rem Manrope,system-ui,sans-serif;text-align:center}
+.inp:focus{border-color:var(--red);outline:none}
+.score{margin-left:auto;font:800 .95rem Unbounded,system-ui,sans-serif;color:var(--red)}
+.rl li.me{border-color:var(--red)}
+.lbrow{display:flex;justify-content:space-between;gap:10px}.lbrow b{font:800 .95rem Unbounded,system-ui,sans-serif}
+.left{text-align:left;margin:0 0 14px}
+.back.off{opacity:.45;text-decoration:line-through}
+</style>
+</head>
+<body>
+<main>
+
+<section id="home" data-v>
+<div class="logo"><svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="40" width="56" height="16" rx="6" fill="#2a2a33"/><path d="M12 40Q12 14 32 14Q52 14 52 40Z" fill="#ff2d46"/><path d="M20 30Q22 22 30 20" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/></svg></div>
+<h1 data-t="title"></h1>
+<p class="sub" data-t="tag"></p>
+<input class="inp" id="nm" maxlength="14" autocomplete="nickname">
+<button class="big" id="play" data-t="play"></button>
+<button class="alt" data-go="board" data-t="lb"></button>
+<button class="alt" data-go="rules" data-t="rules"></button>
+<button class="alt" id="snd"></button>
+<button class="alt" data-go="langs"><span data-t="lang"></span> · <b id="lcur"></b></button>
+</section>
+
+<section id="langs" data-v hidden>
+<div class="top"><button class="back" data-go="home" data-t="back"></button><h2 data-t="lang"></h2></div>
+<div class="stack"><button data-l="0">Қазақша</button><button data-l="1">Русский</button><button data-l="2">English</button></div>
+</section>
+
+<section id="board" data-v hidden>
+<div class="top"><button class="back" data-go="home" data-t="back"></button><h2 data-t="lb"></h2></div>
+<p class="status" id="bbest"></p><p class="sub left" id="bnote"></p>
+<ol class="rl" id="blist"></ol>
+</section>
+
+<section id="rules" data-v hidden>
+<div class="top"><button class="back" data-go="home" data-t="back"></button><h2 data-t="rules"></h2></div>
+<ol class="rl"><li data-t="r1"></li><li data-t="r2"></li><li data-t="r3"></li><li data-t="r4"></li><li data-t="r5"></li><li data-t="r6"></li><li data-t="r7"></li></ol>
+</section>
+
+<section id="game" data-v hidden>
+<div class="top"><button class="back" data-go="home" data-t="back"></button><h2 data-t="title"></h2><span class="score" id="sc"></span><button class="back" id="snd2" aria-label="Sound"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg></button></div>
+<div class="game" id="bgame">
+<p class="status" id="bst"></p>
+<div class="brule" id="brule"></div>
+<button class="again" id="bgo"></button>
+<div class="bstage" id="bstage" hidden><button class="trap" id="tbtn"></button><div class="bar"><i id="bbar"></i></div></div>
+<div class="dark" id="bdark"></div>
+</div>
+</section>
+
+</main>
+<script>
+// [kk, ru, en]
+const D={
+title:['Don’t Press','Don’t Press','Don’t Press'],
+lb:['Таблица','Таблица лидеров','Leaderboard'],
+score:['Ұпай: {a}','Счёт: {a}','Score: {a}'],
+re:['Есіңде сақта: әрбір {a} түйме — {b} бас','Запомни: каждую {a} кнопку — жми {b}','Remember: every {a} button — tap {b}'],
+re0:['Есіңде сақта: әрбір {a} түйме — баспа','Запомни: каждую {a} кнопку — не жми','Remember: every {a} button — do not tap'],
+cm:['Алдыңғы түйме қанша рет қажет болса, сонша рет бас','Нажми столько же раз, сколько нужно было на предыдущей кнопке','Tap as many times as the previous button needed'],
+cw:['Уақыттың жартысын күтіп, содан кейін ғана {a} бас','Подожди половину времени и только потом нажми {a}','Wait half the time, then tap {a}'],
+cn:['Алдыңғы түймені басу керек болса — баспа. Болмаса — {a} бас','Если на предыдущей кнопке нужно было жать — не жми. Если нет — нажми {a}','If the previous button needed taps — do not tap. If not — tap {a}'],
+f_early:['Тым ерте!','Слишком рано!','Too early!'],
+snd_on:['Дыбыс: қосылы','Звук: вкл','Sound: on'],
+snd_off:['Дыбыс: өшірілген','Звук: выкл','Sound: off'],
+rp:['Есіңде сақта: {b} бар {a} түйме — {c} бас','Запомни: {a} кнопка с {b} — жми {c}','Remember: {a} button with a {b} — tap {c}'],
+rp0:['Есіңде сақта: {b} бар {a} түйме — баспа','Запомни: {a} кнопка с {b} — не жми','Remember: {a} button with a {b} — do not tap'],
+ra:['Есіңде сақта: {a} бар түймеден кейінгі түйме — {b} бас','Запомни: после кнопки, где {a}, следующую жми {b}','Remember: after a button showing a {a}, tap the next one {b}'],
+ra0:['Есіңде сақта: {a} бар түймеден кейінгі түйме — баспа','Запомни: после кнопки, где {a}, следующую не жми','Remember: after a button showing a {a}, do not tap the next one'],
+ce:['{a} бас. Бірақ ҚАЗІРГІ түйме {b} болса — БАСПА','Нажми {a}. Но если ЭТА кнопка {b} — НЕ нажимай','Tap {a}. But if THIS button is {b} — do NOT tap'],
+ci:['{a} бас. Бірақ ҚАЗІРГІ түймеде {b} болса — БАСПА','Нажми {a}. Но если на ЭТОЙ кнопке {b} — НЕ нажимай','Tap {a}. But if THIS button shows a {b} — do NOT tap'],
+cc:['{a} бас. Бірақ ҚАЗІРГІ түйме {b} болса — {c} бас','Нажми {a}. Но если ЭТА кнопка {b} — нажми {c}','Tap {a}. But if THIS button is {b}, tap {c}'],
+cj:['{a} бас. Бірақ ҚАЗІРГІ түймеде {b} болса — {c} бас','Нажми {a}. Но если на ЭТОЙ кнопке {b} — нажми {c}','Tap {a}. But if THIS button shows a {b}, tap {c}'],
+co:['{a} бас, тек ҚАЗІРГІ түйме {b} немесе онда {c} болса. Әйтпесе баспа','Жми {a}, только если ЭТА кнопка {b} или на ней {c}. Иначе не жми','Tap {a} only if THIS button is {b} or shows a {c}. Otherwise do not tap'],
+r7:['«3 рет бас, бірақ ҚАЗІРГІ түйме көк болса — БАСПА» сияқты күрделі ережелер де болады.','Бывают и составные правила: «Нажми 3 раза, но если ЭТА кнопка синяя — НЕ нажимай».','There are compound rules too: “Tap 3 times, but if THIS button is blue — do NOT tap”.'],
+best:['Үздік нәтижең: {a}','Твой рекорд: {a}','Your best: {a}'],
+lb_load:['Жүктелуде…','Загрузка…','Loading…'],
+lb_off:['Онлайн-кесте қолжетімсіз. Тек жеке рекорд сақталады.','Онлайн-таблица недоступна. Сохраняется только твой личный рекорд.','The online board is unavailable. Only your personal best is saved.'],
+lb_empty:['Әзірше ешкім жоқ. Бірінші бол!','Пока никого нет. Стань первым!','Nobody here yet. Be the first!'],
+name:['Атың','Твоё имя','Your name'],
+rules:['Ережелер','Правила','Rules'],
+r1:['Түймелер бір-бірден көрсетіледі. Әрқайсысынан кейін экран бір сәтке сөнеді.','Тебе показывают кнопки по одной. После каждой экран на миг гаснет.','Buttons appear one at a time. The screen goes dark for a moment after each one.'],
+r2:['Түймедегі жазуды оқы: «3 рет бас» — дәл 3 рет бас, «Баспа» — уақыт жолағы біткенше күт.','Читай надпись на кнопке: «Нажми 3 раза» — нажми ровно 3 раза, «Не нажимай» — жди, пока кончится полоска времени.','Read the text on the button: “Tap 3 times” means exactly 3 taps, “Do not tap” means wait until the time bar runs out.'],
+r3:['Бір артық басу — жеңіліс. Қажетті санын үлгермесең де жеңіліс.','Одно лишнее нажатие — проигрыш. Не успел нажать нужное число раз — тоже.','One extra tap loses. Not finishing the taps in time loses too.'],
+r4:['«Есіңде сақта: …» деп жазылған сұр түймелер — жаңа ережелер. Оларды қайта көрсетпейді, есіңде ұста.','Серые кнопки с «Запомни: …» — новые правила. Их больше не покажут, держи их в голове.','Grey buttons saying “Remember: …” add new rules. They are never shown again, so keep them in your head.'],
+r5:['Есте сақталған ереже түймедегі жазудан маңызды. Жаңа ереже ескісінен басым. Жазуы да, сәйкес ережесі де жоқ түйме — баспа.','Запомненное правило важнее надписи на кнопке. Новое правило важнее старого. Кнопка без надписи и без подходящего правила — не нажимай.','A remembered rule beats the button text. A newer rule beats an older one. A button with no text and no matching rule: do not tap.'],
+r6:['Ережелер келесі деңгейлерге ауысады. «…ұмыт» карточкалары оларды өшіреді. Барлық 10 деңгейді өт.','Правила переходят на следующие уровни. Карточки «Забудь…» стирают их. Пройди все 10 уровней.','Rules carry over to the next levels. “Forget…” cards erase them. Clear all 10 levels.'],
+tag:['Баспа. Немесе бас. Ережелерді есте сақта.','Не нажимай. Или нажми. Запоминай правила.','Do not press. Or do. Remember the rules.'],
+play:['Ойнау','Играть','Play'],lang:['Тіл','Язык','Language'],back:['Артқа','Назад','Back'],
+dif:['Қиындық','Сложность','Difficulty'],d0:['Оңай','Легко','Easy'],d1:['Орташа','Нормально','Normal'],d2:['Қиын','Сложно','Hard'],
+go:['Бастаймыз','Поехали','Go'],again:['Қайтадан','Ещё раз','Try again'],
+lvl:['Деңгей {a} / 10.','Уровень {a} из 10.','Level {a} of 10.'],
+prog:['Деңгей {a} / 10. Түйме {b} / {c}.','Уровень {a} из 10. Кнопка {b} из {c}.','Level {a} of 10. Button {b} of {c}.'],
+win:['Барлық 10 деңгей өтті!','Все 10 уровней пройдены!','All 10 levels cleared!'],
+intro:['Түймелердегі жазуларды оқып, ережелерді есте сақта: олар деңгей соңына дейін әрекет етеді және жазудан маңыздырақ. Жаңа ереже ескісінен басым. Жазуы да, сәйкес ережесі де жоқ түйме — баспа. Алдыңғы деңгейлердегі ережелер жұмысын жалғастырады.','Читай надписи на кнопках и запоминай правила: они действуют до конца уровня и важнее надписи. Новое правило важнее старого. Кнопка без надписи и без подходящего правила — не жми. Правила с прошлых уровней продолжают действовать.','Read each button and remember the rules: they last until the level ends and beat the button text. A newer rule beats an older one. A button with no text and no matching rule — do not tap. Rules from earlier levels keep working.'],
+no:['Баспа','Не нажимай','Do not tap'],
+tap:['{a} бас','Нажми {a}','Tap {a}'],
+carry:['Осы түймені {a} бас, ал келесісінде — {b} бас','Нажми эту кнопку {a}, а на следующей — {b}','Tap this button {a}, then tap the next one {b}'],
+ri:['Есіңде сақта: {a} — {b} бас','Запомни: {a} — жми {b}','Remember: {a} — tap {b}'],
+ri0:['Есіңде сақта: {a} — баспа','Запомни: {a} — не жми','Remember: {a} — do not tap'],
+rc:['Есіңде сақта: {a} түйме — {b} бас','Запомни: {a} кнопка — жми {b}','Remember: {a} button — tap {b}'],
+rc0:['Есіңде сақта: {a} түйме — баспа','Запомни: {a} кнопка — не жми','Remember: {a} button — do not tap'],
+fl:['Соңғы есте сақталған ережені ұмыт','Забудь последнее запомненное правило','Forget the last remembered rule'],
+fa:['Барлық есте сақталған ережені ұмыт','Забудь все запомненные правила','Forget all remembered rules'],
+f_late:['Үлгермедің! Бұл түймені басу керек еді.','Не успел! Эту кнопку нужно было нажать.','Too slow! You had to tap this button.'],
+f_press:['Қате: бұл түймені баспау керек еді.','Ошибка: на эту кнопку нельзя было нажимать.','Wrong: you should not have tapped this button.'],
+f_more:['Артық басу! Дәл қанша рет керек болса, сонша басу керек еді.','Лишнее нажатие! Нужно было нажать ровно столько раз, сколько нужно.','One tap too many! You had to tap exactly as many times as required.'],
+f_rule:['Есте сақталған ереже іске қосылды! {a} басу керек еді.','Сработало запомненное правило! Нужно было нажать {a}.','A remembered rule applied! You had to tap {a}.'],
+f_rule0:['Есте сақталған ереже іске қосылды: басуға болмайды.','Сработало запомненное правило: нажимать было нельзя.','A remembered rule applied: you must not tap.']
+};
+const NM={o2:['екінші','вторую','2nd'],o3:['үшінші','третью','3rd'],o4:['төртінші','четвёртую','4th'],spider:['өрмекші','паук','spider'],bat:['жарқанат','летучая мышь','bat'],ghost:['елес','призрак','ghost'],skull:['бас сүйек','череп','skull'],bomb:['бомба','бомба','bomb'],key:['кілт','ключ','key'],gem:['кристалл','кристалл','gem'],flame:['от','огонь','flame'],red:['қызыл','красная','red'],blue:['көк','синяя','blue'],green:['жасыл','зелёная','green'],yellow:['сары','жёлтая','yellow']};
+let li=2,dif=2;let zscore=0,zsb=0,uid=null,dbc,rows=[];try{const s=localStorage.getItem('dp_lang');if(s!==null&&D.play[+s])li=+s}catch(e){}
+const NMI={spider:'пауком',bat:'летучей мышью',ghost:'призраком',skull:'черепом',bomb:'бомбой',key:'ключом',gem:'кристаллом',flame:'огнём'};
+const LT=x=>{if(typeof x!=='string')return x;if(x[0]==='~')return NM[x.slice(1)][li];if(x[0]==='^')return li===1?NMI[x.slice(1)]:NM[x.slice(1)][li];if(x[0]==='#'){const n=+x.slice(1),m=n%10,h=n%100;return li===1?n+' '+(m>=2&&m<=4&&(h<12||h>14)?'раза':'раз'):li===0?n+' рет':n+(n===1?' time':' times')}return x};
+const tr=(k,a,b,c)=>D[k][li].replace('{a}',LT(a)).replace('{b}',LT(b)).replace('{c}',LT(c));
+function S(el,k,a,b,c){el.dataset.k=k;el.dataset.a=a??'';el.dataset.b=b??'';el.dataset.c=c??'';el.textContent=tr(k,a,b,c)}
+function apply(){
+  document.documentElement.lang=['kk','ru','en'][li];
+  document.querySelectorAll('[data-t]').forEach(e=>e.textContent=D[e.dataset.t][li]);
+  document.querySelectorAll('[data-k]').forEach(e=>e.textContent=tr(e.dataset.k,e.dataset.a,e.dataset.b,e.dataset.c));
+  document.querySelectorAll('[data-l]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.l===li));
+  document.getElementById('lcur').textContent=['Қазақша','Русский','English'][li];
+  document.title=D.title[li];document.getElementById('nm').placeholder=D.name[li];
+}
+const IC={
+spider:`<path d='M22 32L8 22M22 37L6 38M23 42L8 54M26 46L16 60M42 32L56 22M42 37L58 38M41 42L56 54M38 46L48 60' stroke='currentColor' stroke-width='3' fill='none' stroke-linecap='round'/><circle cx='32' cy='38' r='11' fill='currentColor'/><circle cx='32' cy='22' r='7' fill='currentColor'/><circle cx='29.5' cy='21' r='2' fill='#fff'/><circle cx='34.5' cy='21' r='2' fill='#fff'/>`,
+bat:`<path d='M32 24L27 14V27Q16 19 3 26Q10 31 12 42Q18 36 24 40Q28 46 32 52Q36 46 40 40Q46 36 52 42Q54 31 61 26Q48 19 37 27V14Z' fill='currentColor'/><circle cx='29' cy='31' r='2' fill='#fff'/><circle cx='35' cy='31' r='2' fill='#fff'/>`,
+ghost:`<path d='M12 56V28Q12 8 32 8Q52 8 52 28V56L44 50L38 56L32 50L26 56L20 50Z' fill='currentColor'/><circle cx='24' cy='28' r='4.5' fill='#fff'/><circle cx='40' cy='28' r='4.5' fill='#fff'/>`,
+skull:`<path d='M32 6C16 6 10 18 10 28C10 36 14 40 20 42V54H44V42C50 40 54 36 54 28C54 18 48 6 32 6Z' fill='currentColor'/><circle cx='24' cy='30' r='6' fill='#fff'/><circle cx='40' cy='30' r='6' fill='#fff'/><path d='M32 38L28 46H36Z' fill='#fff'/>`,
+bomb:`<circle cx='30' cy='38' r='20' fill='currentColor'/><path d='M40 22L48 12' stroke='currentColor' stroke-width='4' stroke-linecap='round'/><circle cx='51' cy='9' r='4.5' fill='#e8334a'/><circle cx='23' cy='31' r='4' fill='#fff' opacity='.5'/>`,
+key:`<circle cx='20' cy='32' r='12' fill='none' stroke='currentColor' stroke-width='6'/><path d='M32 32H58M50 32V43M42 32V41' stroke='currentColor' stroke-width='6' stroke-linecap='round'/>`,
+gem:`<path d='M16 10H48L60 26L32 58L4 26Z' fill='currentColor'/><path d='M4 26H60M22 10L16 26L32 58M42 10L48 26L32 58' stroke='#fff' stroke-width='2' fill='none'/>`,
+flame:`<path d='M32 4C34 16 50 24 50 40C50 52 42 60 32 60C22 60 14 52 14 40C14 32 20 28 22 20C26 26 28 28 30 28C30 20 28 12 32 4Z' fill='currentColor'/><path d='M32 60C26 60 24 54 26 48C28 44 32 42 32 38C36 44 40 48 38 54C37 58 35 60 32 60Z' fill='#ffd23f'/>`};
+const svg=k=>`<svg viewBox='0 0 64 64' aria-hidden='true'>${IC[k]}</svg>`;
+
+// ---- Game
+const ZI=Object.keys(IC),ZC={red:'#ff3b4f',blue:'#4d7cff',green:'#2bd67b',yellow:'#ffd23f'},ZK=Object.keys(ZC),zp=a=>a[Math.floor(Math.random()*a.length)];
+const bst=document.getElementById('bst'),brule=document.getElementById('brule'),bgo=document.getElementById('bgo'),bstage=document.getElementById('bstage'),tbtn=document.getElementById('tbtn'),bbar=document.getElementById('bbar'),bdark=document.getElementById('bdark'),bgame=document.getElementById('bgame');
+let zl=1,zseq,zi,zt,ztaps,zneed,zlive=0,zst='intro',zbase=[],zendr=[],zmin=0;
+function zScript(L){
+  const out=[],N=8+L,mx=Math.min(5,1+Math.floor((L+dif*2)/3)),rules=zbase.map(r=>({...r})),rn=m=>2+Math.floor(Math.random()*m);let pi='',pc='',cnt=0;
+  const face=()=>{
+    const ik=rules.filter(r=>r.t!=='c'&&r.t!=='e').map(r=>r.t==='p'?r.k2:r.k),ck=rules.filter(r=>r.t==='c'||r.t==='p').map(r=>r.k);let ic,c;
+    do{ic=ik.length&&Math.random()<.12?zp(ik):zp(ZI)}while(ic===pi);
+    do{c=ck.length&&Math.random()<.12?zp(ck):zp(ZK)}while(c===pc);
+    pi=ic;pc=c;return{ic,c};
+  };
+  const push=b=>{
+    cnt++;const pv=out[out.length-1];b.need=b.base==='prev'?(pv?pv.need:0):b.base==='inv'?(pv&&pv.need>0?0:b.k2):b.base;
+    for(let i=rules.length-1;i>=0;i--){const r=rules[i];if(hit(r,b,out[out.length-1])){b.rule=r;b.need=r.n;break}}
+    out.push(b);
+  };
+  const decl=()=>{
+    const t=zp(['i','c','i','c','p','a','e']),pool=(t==='e'?[2,3,4]:t==='c'||t==='p'?ZK:ZI).filter(k=>!rules.some(r=>r.t===t&&r.k===k)),n=zp([0,0,2,3,4,5]);
+    if(!pool.length)return;
+    const r={t,k:zp(pool),n,k2:t==='p'?zp(ZI):null};
+    r.tk=({i:'ri',c:'rc',p:'rp',a:'ra',e:'re'})[t]+(n?'':'0');r.a=(t==='e'?'~o':'~')+r.k;if(t==='p'){r.b='^'+r.k2;r.x='#'+n}else r.b='#'+n;
+    rules.push(r);out.push({neutral:1,need:0,t:r.tk,a:r.a,b:r.b,x:r.x});
+  };
+  const hit=(r,b,p)=>r.t==='i'?b.ic===r.k:r.t==='c'?b.c===r.k:r.t==='p'?(b.c===r.k&&b.ic===r.k2):r.t==='e'?cnt%r.k===0:!!(p&&p.ic===r.k);
+  const comp=()=>{
+    if(Math.random()<.3){const f=face(),n=rn(4),k=zp(['cm','cw','cn']),o={...f,t:k};if(k==='cm')o.base='prev';else if(k==='cw'){o.a='#'+n;o.base=n;o.after=.5}else{o.a='#'+n;o.k2=n;o.base='inv'}push(o);return}
+    const k=zp(['ce','ci','cc','cj','co']),n=rn(5);let m=rn(5);if(m===n)m=n%6+2;
+    const col=zp(ZK),ic=zp(ZI),f=face();
+    if(Math.random()<.5)f.c=col;if(Math.random()<.5)f.ic=ic;
+    const o={...f,t:k,a:'#'+n};
+    if(k==='ce'){o.b='~'+col;o.base=f.c===col?0:n}
+    else if(k==='ci'){o.b='~'+ic;o.base=f.ic===ic?0:n}
+    else if(k==='cc'){o.b='~'+col;o.x='#'+m;o.base=f.c===col?m:n}
+    else if(k==='cj'){o.b='~'+ic;o.x='#'+m;o.base=f.ic===ic?m:n}
+    else{o.b='~'+col;o.x='~'+ic;o.base=f.c===col||f.ic===ic?n:0}
+    push(o);
+  };
+  if(rules.length<mx)decl();
+  while(out.length<N){
+    const q=Math.random();
+    if(rules.length<mx&&(q<.2||!rules.length))decl();
+    else if(rules.length>1&&L>=3&&q<.28){rules.pop();out.push({neutral:1,need:0,t:'fl'})}
+    else if(rules.length>2&&L>=6&&q<.31){rules.length=0;out.push({neutral:1,need:0,t:'fa'})}
+    else if(q<.45){const x=rn(5),y=rn(4);out.push({neutral:1,t:'carry',a:'#'+x,b:'#'+y,need:x},{neutral:1,need:y})}
+    else if(q<.7)push({...face(),base:0});
+    else if(Math.random()<.5)comp();
+    else{const f=face(),x=rn(7);push(Math.random()<.35?{...f,t:'no',base:0}:{...f,t:'tap',a:'#'+x,base:x})}
+  }
+  zendr=rules.map(r=>({...r}));return out;
+}
+const zLight=()=>{bdark.style.transition='opacity .1s steps(2)';bdark.style.opacity='0';sfx('on')};
+function zIntro(){
+  clearTimeout(zt);zlive=0;zst='intro';zsb=zscore;bgame.classList.remove('shake');
+  bdark.style.transition='none';bdark.style.opacity='0';
+  zRun();
+}
+function zRun(){
+  zst='run';bgo.hidden=brule.hidden=true;bstage.hidden=false;
+  tbtn.className='trap';tbtn.innerHTML='';zseq=zScript(zl);zi=-1;zNext();
+}
+function zNext(){
+  if(zi>=0){zscore+=10*zl;zScoreShow();sfx('ok')}zlive=0;zi++;
+  bdark.style.transition='none';bdark.style.opacity='1';sfx('off');
+  zt=setTimeout(()=>{
+    if(zi>=zseq.length){zDone();return}
+    const b=zseq[zi];
+    tbtn.className='trap s';tbtn.style.setProperty('--zc',ZC[b.c]||'#8a8a96');
+    tbtn.innerHTML=(b.ic?svg(b.ic):'')+'<em class="bt"></em><b>0</b>';
+    if(b.t)S(tbtn.querySelector('em'),b.t,b.a,b.b,b.x);
+    S(bst,'prog',zl,zi+1,zseq.length);
+    zLight();
+    zneed=b.need;ztaps=0;zlive=1;
+    const ms=Math.round([1.6,1.3,1.15][dif]*Math.max(2000,2900+b.need*600-zl*60+((b.b&&!b.neutral)||b.after||b.base==='prev'||b.base==='inv'?900:0)));zmin=!b.rule&&b.after?Date.now()+ms*b.after:0;
+    bbar.style.transition='none';bbar.style.width='100%';void bbar.offsetWidth;bbar.style.transition='width '+ms+'ms linear';bbar.style.width='0';
+    zt=setTimeout(()=>{if(ztaps<zneed)zFail(b.rule?'f_rule':'f_late',b.rule?'#'+b.need:undefined,b.rule);else zNext()},ms);
+  },450);
+}
+function zDone(){
+  if(zl>=10){sfx('win');zscore+=100*zl;zScoreShow();zSave();zst='win';S(bst,'win');tbtn.innerHTML='';bstage.hidden=true;bgo.hidden=false;S(bgo,'again');zLight();return}
+  sfx('lvl');zscore+=100*zl;zScoreShow();zbase=zendr;zl++;zIntro();
+}
+function zFail(k,a,rl){
+  clearTimeout(zt);zlive=0;zst='fail';zSave();sfx('bad');
+  tbtn.classList.add('bad');bbar.style.transition='none';
+  S(bst,k,a);
+  const cb=zseq&&zseq[zi];if(rl){S(brule,rl.tk,rl.a,rl.b,rl.x);brule.hidden=false}else if(cb&&cb.t){S(brule,cb.t,cb.a,cb.b,cb.x);brule.hidden=false}else brule.hidden=true;
+  bgo.hidden=false;S(bgo,'again');
+  bgame.classList.remove('shake');void bgame.offsetWidth;bgame.classList.add('shake');
+}
+tbtn.onclick=()=>{
+  if(!zlive)return;
+  if(zmin&&Date.now()<zmin){zFail('f_early');return}ztaps++;const q=tbtn.querySelector('b');if(q)q.textContent=ztaps;
+  tbtn.classList.remove('hit');void tbtn.offsetWidth;tbtn.classList.add('hit');sfx('tap');
+  if(ztaps>zneed){const sr=zseq[zi].rule;zFail(sr&&!zneed?'f_rule0':zneed?'f_more':'f_press',undefined,sr);return}
+  if(ztaps===zneed){clearTimeout(zt);zt=setTimeout(()=>{zlive=0;zNext()},700)}
+};
+bgo.onclick=()=>{
+  if(zst==='intro')zRun();
+  else{if(zst==='win'){zl=1;zbase=[];zscore=0}else zscore=zsb;zScoreShow();zIntro()}
+};
+
+// ---- Menu
+const views=document.querySelectorAll('[data-v]');
+function show(id){clearTimeout(zt);zlive=0;if(zst==='run'&&id!=='game'){zSave();zst='intro'}views.forEach(v=>v.hidden=v.id!==id)}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+document.getElementById('play').onclick=()=>{show('game');zl=1;zbase=[];zscore=0;zScoreShow();zIntro()};
+document.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{li=+b.dataset.l;try{localStorage.setItem('dp_lang',li)}catch(e){}apply();renderBoard()});
+
+
+// ---- Sound (synthesized, no files)
+let sOn=true,ac=null;try{sOn=localStorage.getItem('dp_snd')!=='0'}catch(e){}
+function tone(f,d,type,v,when,slide){
+  if(!sOn)return;
+  try{
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state==='suspended')ac.resume();
+    const o=ac.createOscillator(),g=ac.createGain(),t0=ac.currentTime+(when||0);
+    o.type=type;o.frequency.setValueAtTime(f,t0);
+    if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t0+d);
+    g.gain.setValueAtTime(v,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+d);
+    o.connect(g);g.connect(ac.destination);o.start(t0);o.stop(t0+d+.02);
+  }catch(e){}
+}
+const SFX={
+  tap:()=>tone(520,.07,'square',.08),
+  tick:()=>tone(900,.03,'square',.05),
+  ok:()=>{tone(660,.1,'triangle',.14);tone(880,.14,'triangle',.14,.09)},
+  off:()=>tone(170,.16,'sawtooth',.13,0,-120),
+  on:()=>tone(300,.12,'square',.06,0,500),
+  bad:()=>{tone(150,.35,'sawtooth',.2,0,-90);tone(110,.35,'square',.12,.05)},
+  lvl:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.16,'triangle',.15,i*.1)),
+  win:()=>[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.18,'triangle',.16,i*.11))
+};
+const sfx=k=>SFX[k]();
+const sndb=document.getElementById('snd'),snd2=document.getElementById('snd2');
+function sndUI(){S(sndb,sOn?'snd_on':'snd_off');snd2.classList.toggle('off',!sOn)}
+sndb.onclick=snd2.onclick=()=>{sOn=!sOn;try{localStorage.setItem('dp_snd',sOn?'1':'0')}catch(e){}sndUI();sfx('ok')};
+document.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('#tbtn,#snd,#snd2'))sfx('tick')});
+sndUI();
+
+// ---- Name, score, leaderboard
+const nm=document.getElementById('nm'),sc=document.getElementById('sc'),bbest=document.getElementById('bbest'),bnote=document.getElementById('bnote'),blist=document.getElementById('blist');
+try{nm.value=localStorage.getItem('dp_name')||''}catch(e){}
+nm.oninput=()=>{try{localStorage.setItem('dp_name',nm.value.trim())}catch(e){}};
+const myName=()=>nm.value.trim()||'Player';
+let best=0;try{best=+localStorage.getItem('dp_best')||0}catch(e){}
+function zScoreShow(){S(sc,'score',zscore)}
+function renderBoard(){
+  S(bbest,'best',best);
+  blist.innerHTML='';
+  rows.forEach(r=>{
+    const el=document.createElement('li'),row=document.createElement('div'),a=document.createElement('span'),b=document.createElement('b');
+    row.className='lbrow';a.textContent=r.name||'?';b.textContent=r.score;row.append(a,b);el.append(row);
+    if(r.id===uid)el.className='me';
+    blist.append(el);
+  });
+  if(dbc===undefined)S(bnote,'lb_load');else if(dbc===null)S(bnote,'lb_off');else if(!rows.length)S(bnote,'lb_empty');else bnote.textContent='';
+}
+async function zSave(){
+  if(zscore>best){best=zscore;try{localStorage.setItem('dp_best',best)}catch(e){}}
+  renderBoard();
+  if(!dbc||!uid)return;
+  try{
+    const ref=dbc.collection('scores').doc(uid),cur=await ref.get();
+    if(!cur.exists||(cur.data().score||0)<zscore)await ref.set({name:myName(),score:zscore,level:zl,ts:Date.now()});
+  }catch(e){S(bnote,'lb_off')}
+}
+(async()=>{
+  try{
+    if(!window.claude||!claude.use)throw 0;
+    const [db,user]=await Promise.all([claude.use('db'),claude.use('user')]);
+    if(!db)throw 0;
+    dbc=db;uid=user?await user.id():null;
+    const tmo=setTimeout(()=>S(bnote,'lb_off'),10000);
+    db.collection('scores').orderBy('score','desc').limit(20).onSnapshot(s=>{clearTimeout(tmo);rows=s.docs.map(d=>({id:d.id,...d.data()}));renderBoard()},()=>{clearTimeout(tmo);dbc=null;renderBoard()});
+  }catch(e){dbc=null}
+  renderBoard();
+})();
+zScoreShow();
+apply();
+</script>
+</body>
+</html>
